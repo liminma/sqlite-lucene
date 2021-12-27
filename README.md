@@ -1,1 +1,1 @@
-# sqlite-lucene
+# Indexing SQLite table data
