@@ -15,7 +15,7 @@ class BuildIndex : CliktCommand(help = "Indexing sqlite tables") {
         .path(canBeFile = false)
 
     override fun run() {
-        buildIndex(dataPath, indexPath)
+        buildIndex(dataPath, indexPath.toString())
     }
 }
 

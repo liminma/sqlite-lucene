@@ -1,6 +1,5 @@
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.apache.lucene.analysis.standard.StandardAnalyzer
@@ -20,9 +19,9 @@ const val FULLTEXT_FIELD = "content"
 
 private val logger = KotlinLogging.logger {}
 
-fun buildIndex(dataPath: Path, indexPath: Path) = runBlocking {
+fun buildIndex(dataPath: Path, indexFolder: String) = runBlocking {
     if (dataPath.isRegularFile()) {
-        TextIndexWriter(indexPath.toString()).use { writer ->
+        TextIndexWriter(indexFolder).use { writer ->
             recordFlow(dataPath.toString())
 //                .take(2)
                 .collect { writer.add(it) }
@@ -35,7 +34,7 @@ fun buildIndex(dataPath: Path, indexPath: Path) = runBlocking {
         val flows = mutableListOf<Flow<Record>>()
         dbFiles.forEach { flows.add(recordFlow(it.toString())) }
 
-        TextIndexWriter(indexPath.toString()).use { writer ->
+        TextIndexWriter(indexFolder).use { writer ->
             val timeElapsed = measureTimeMillis {
                 flows.merge()
 //                    .take(10)
