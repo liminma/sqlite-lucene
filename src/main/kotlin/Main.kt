@@ -2,8 +2,7 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.types.path
-
-fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
+import mu.KotlinLogging
 
 class SqliteLucene : CliktCommand() {
     override fun run() = Unit
@@ -20,13 +19,15 @@ class BuildIndex : CliktCommand(help = "Indexing sqlite tables") {
     }
 }
 
+private val logger = KotlinLogging.logger {}
+
 class Search : CliktCommand(help = "Search index") {
     private val indexPath by argument(name = "index-path", help = "Path of the index directory")
         .path(canBeFile = false)
 
     override fun run() {
         TextIndexSearcher(indexPath.toString()).use { searcher ->
-            println("Total documents in the index: ${searcher.getTotalDocuments()}")
+            logger.trace("Total documents in the index: ${searcher.getTotalDocuments()}")
             while (true) {
                 print("[field :]query-string ")
                 val input = readln()

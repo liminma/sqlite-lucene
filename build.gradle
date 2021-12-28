@@ -16,6 +16,8 @@ dependencies {
     implementation 'org.apache.lucene:lucene-queryparser:8.11.1'
     implementation 'org.apache.lucene:lucene-analyzers-common:8.11.1'
     implementation 'com.github.ajalt.clikt:clikt:3.3.0'
+    implementation 'io.github.microutils:kotlin-logging-jvm:2.1.20'
+    implementation 'ch.qos.logback:logback-classic:1.2.6'
     testImplementation 'org.jetbrains.kotlin:kotlin-test:1.6.0'
 }
 

@@ -2,11 +2,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import mu.KotlinLogging
 import java.sql.DriverManager
 import java.sql.ResultSet
 import java.sql.Statement
 
 typealias Record = Map<String, String>
+
+private val logger = KotlinLogging.logger {}
 
 fun recordFlow(dbFile: String): Flow<Record> = flow {
     val sqliteUrl = "jdbc:sqlite:$dbFile"
@@ -19,13 +22,13 @@ fun recordFlow(dbFile: String): Flow<Record> = flow {
     DriverManager.getConnection(sqliteUrl).use { conn ->
         val stmt = conn.createStatement()
 
-        log("${datasetName}: emitting columns...")
+        logger.trace { "${datasetName}: emitting column labels..." }
         val (colNames, colLabels) = getColumns(stmt, datasetName)
         emit(colLabels)
 
         val rs = stmt.executeQuery("SELECT rowid as id, * FROM data")
         while (rs.next()) {
-            log("${datasetName}: emitting row...")
+            logger.trace { "${datasetName}: emitting rows..." }
             val row = getRow(rs, colNames, datasetName)
             emit(row)
         }

@@ -2,6 +2,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.runBlocking
+import mu.KotlinLogging
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.document.Document
 import org.apache.lucene.document.Field
@@ -17,15 +18,14 @@ import kotlin.system.measureTimeMillis
 
 const val FULLTEXT_FIELD = "content"
 
+private val logger = KotlinLogging.logger {}
+
 fun buildIndex(dataPath: Path, indexPath: Path) = runBlocking {
     if (dataPath.isRegularFile()) {
         TextIndexWriter(indexPath.toString()).use { writer ->
             recordFlow(dataPath.toString())
-                .take(2)
-                .collect { row ->
-//                    log("in Main")
-                    writer.add(row)
-                }
+//                .take(2)
+                .collect { writer.add(it) }
         }
 
     } else {
@@ -38,13 +38,10 @@ fun buildIndex(dataPath: Path, indexPath: Path) = runBlocking {
         TextIndexWriter(indexPath.toString()).use { writer ->
             val timeElapsed = measureTimeMillis {
                 flows.merge()
-                    .take(10)
-                    .collect { row ->
-//                        log("${row["datasetname"]} ${row["id"]}")
-                        writer.add(row)
-                    }
+//                    .take(10)
+                    .collect { writer.add(it) }
             }
-            println("Time elapsed: $timeElapsed ms")
+            logger.info { "Time elapsed: $timeElapsed ms" }
         }
     }
 }
