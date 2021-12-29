@@ -1,3 +1,4 @@
+import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute
 import org.apache.lucene.document.Document
@@ -48,16 +49,23 @@ class TextIndexSearcher(indexPath: String) : AutoCloseable {
 
     private fun exactPhraseQuery(field: String, queryString: String): PhraseQuery {
         val builder = PhraseQuery.Builder()
-        StandardAnalyzer().tokenStream(field, queryString).use { tokenStream ->
+        tokenize(field, queryString, StandardAnalyzer()).forEach { builder.add(it) }
+
+        return builder.build()
+    }
+
+    private fun tokenize(field: String, queryString: String, analyzer: Analyzer): List<Term> {
+        val terms = mutableListOf<Term>()
+        analyzer.tokenStream(field, queryString).use { tokenStream ->
             val attr = tokenStream.addAttribute(CharTermAttribute::class.java)
             tokenStream.reset()
             while (tokenStream.incrementToken()) {
-                builder.add(Term(field, attr.toString()))
+                terms.add(Term(field, attr.toString()))
             }
             tokenStream.end()
         }
 
-        return builder.build()
+        return terms.toList()
     }
 
     private fun getDocs(q: Query, topK: Int = TOP_K): List<Document> {
@@ -71,12 +79,12 @@ class TextIndexSearcher(indexPath: String) : AutoCloseable {
     fun getTotalDocuments() = searcher.indexReader.numDocs()
 
     fun searchByTermQuery(field: String, queryString: String, topK: Int = TOP_K): List<Document> {
-        val q = TermQuery(Term(field, queryString))
+        val q = TermQuery(tokenize(field, queryString, StandardAnalyzer())[0])
         return getDocs(q, topK)
     }
 
     fun searchByPrefixQuery(field: String, queryString: String, topK: Int = TOP_K): List<Document> {
-        val query = PrefixQuery(Term(field, queryString))
+        val query = PrefixQuery(tokenize(field, queryString, StandardAnalyzer())[0])
         return getDocs(query, topK)
     }
 
