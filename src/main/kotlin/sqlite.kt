@@ -33,7 +33,7 @@ fun recordFlow(dbFile: String): Flow<Record> = flow {
             emit(row)
         }
     }
-}.flowOn(Dispatchers.Default)
+}.flowOn(Dispatchers.Default) // change the context of the flow
 
 private fun getColumns(stmt: Statement, datasetName: String): Pair<List<String>, Record> {
     val columns = mutableListOf<String>()

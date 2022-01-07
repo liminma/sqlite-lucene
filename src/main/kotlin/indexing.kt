@@ -28,15 +28,17 @@ fun buildIndex(dataPath: Path, indexFolder: String) = runBlocking {
         }
 
     } else {
+        // find all db files
         val dbFiles = dataPath.toFile().listFiles()?.filter { it.name.endsWith(".db") }
             ?: throw Exception("No sqlite db files found!")
 
+        // create a list of Flows, with one Flow for each db file
         val flows = mutableListOf<Flow<Record>>()
         dbFiles.forEach { flows.add(recordFlow(it.toString())) }
 
         TextIndexWriter(indexFolder).use { writer ->
             val timeElapsed = measureTimeMillis {
-                flows.merge()
+                flows.merge() // merge all flows concurrently
 //                    .take(10)
                     .collect { writer.add(it) }
             }
